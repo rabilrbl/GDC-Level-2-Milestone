@@ -63,16 +63,62 @@ $ python tasks.py report # Statistics"""
         )
 
     def add(self, args):
-        pass
+        self.read_current()
+        if len(args) < 2:
+            print("Error: Missing tasks string. Nothing added!")
+            return
+        priority = int(args[0])
+        name = " ".join(args[1:])
+        if priority in self.current_items.keys():
+            newPriority  = priority+1
+            while newPriority in self.current_items.keys():
+                newPriority += 1
+            self.current_items[newPriority] = self.current_items.get(priority)
+        self.current_items[priority] = name
+        self.write_current()
+        print(f"Added task: \"{name}\" with priority {priority}",end="")
+            
 
     def done(self, args):
-        pass
+        if len(args) < 1:
+            print("Error: Missing priority number. Nothing done!")
+            return
+        priority = int(args[0])
+        if priority in self.current_items.keys():
+            self.completed_items.append(self.current_items.get(priority))
+            del self.current_items[priority]
+            self.write_current()
+            self.write_completed()
+            print("Marked item as done.")
+        else:
+            print(f"Error: no incomplete item with priority {priority} exists.",end="")
 
     def delete(self, args):
-        pass
+        if len(args) < 1:
+            print("Error: Missing priority number. Nothing deleted!")
+            return
+        priority = int(args[0])
+        if priority in self.current_items.keys():
+            del self.current_items[priority]
+            self.write_current()
+            print(f"Deleted item with priority {priority}.")
+        else:
+            print(f"Error: item with priority {args[0]} does not exist. Nothing deleted.")
 
     def ls(self):
-        pass
+        if len(self.current_items) == 0:
+            print("No items in the list!")
+            return
+        for index,key in enumerate(sorted(self.current_items.keys()),1):
+            print(f"{index}. {self.current_items[key]} [{key}]")
 
     def report(self):
-        pass
+        if len(self.current_items) == 0:
+            print("No items in the list!")
+            return
+        print(f"Pending : {len(self.current_items)}")
+        for index,key in enumerate(sorted(self.current_items.keys()),1):
+            print(f"{index}. {self.current_items[key]} [{key}]")
+        print(f"\nCompleted : {len(self.completed_items)}")
+        for index,item in enumerate(self.completed_items,1):
+            print(f"{index}. {item}")
